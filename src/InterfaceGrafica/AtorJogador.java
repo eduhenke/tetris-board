@@ -2,7 +2,6 @@ package InterfaceGrafica;
 
 import javax.swing.JOptionPane;
 
-import DominioDoProblema.ElementoDominioProblema;
 import DominioDoProblema.Lance;
 import DominioDoProblema.Tabuleiro;
 import Rede.AtorNetgames;
@@ -10,7 +9,6 @@ import Rede.AtorNetgames;
 public class AtorJogador {
 	
 	public AtorNetgames ngServer;
-	protected ElementoDominioProblema domProblema;
 	protected InterfaceJogo gui;
 	protected Tabuleiro movimentacao;
 	
@@ -34,12 +32,10 @@ public class AtorJogador {
 	}
 	public AtorJogador() {
 		ngServer = new AtorNetgames();
-		domProblema = new ElementoDominioProblema();
 	}
 	private void iniciar(InterfaceJogo InterfaceJogo) {
 		gui = InterfaceJogo;
 		ngServer = new AtorNetgames();
-		domProblema = new ElementoDominioProblema();
 		movimentacao = new Tabuleiro();		
 		ngServer.definirInterfaceJogador(this);
 	}
