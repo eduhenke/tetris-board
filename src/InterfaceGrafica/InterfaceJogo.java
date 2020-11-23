@@ -18,27 +18,24 @@ import DominioDoProblema.Posicao;
 
 import javax.swing.JMenu;
 import javax.swing.AbstractAction;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 
-public class InterfaceJogo implements MouseListener, ActionListener {
+public class InterfaceJogo extends MouseAdapter implements MouseListener {
 
 	private JFrame frame;
 	private AtorJogador atorJogador;
 	public JButton[][] botoesTabuleiro;
 	public JButton[] botoesMenu;
 	public JLabel lblNomejogador;
-	public Tabuleiro h;
+	public Tabuleiro tabuleiro;
 	Peca.Tipo tipoPeca = null;
 	/**
 	 * Launch the application.
-	 */
+	só */
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -52,10 +49,10 @@ public class InterfaceJogo implements MouseListener, ActionListener {
 		});
 	}
 	public void atualizarTabuleiro(Peca novaPeca){
-		h.colocarPeca(novaPeca);
+		tabuleiro.colocarPeca(novaPeca);
 		for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-            	Peca peca = h.botoesTabuleiro[i][j].peca;
+            	Peca peca = tabuleiro.posicoes[i][j].peca;
             	if (peca != null) {
             		botoesTabuleiro[i][j].setBackground(peca.cor);
             	} else {
@@ -79,7 +76,9 @@ public class InterfaceJogo implements MouseListener, ActionListener {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		atorJogador = AtorJogador.getInstance(this);
+		atorJogador = new AtorJogador(this);
+		tabuleiro = new Tabuleiro(atorJogador);
+		atorJogador.setTabuleiro(tabuleiro);
 		frame = new JFrame();
 		frame.setResizable(false);
 		frame.setBounds(100, 100, 591, 529);
@@ -163,18 +162,15 @@ public class InterfaceJogo implements MouseListener, ActionListener {
 		botoesMenu[2] = btnLinha;
 		botoesMenu[3] = btnT;
 		
-		JLabel lblYut = new JLabel("VEZ DE:");
-		lblYut.setBounds(10, 30, 46, 39);
+		JLabel lblYut = new JLabel("Jogador:");
+		lblYut.setBounds(10, 30, 76, 39);
 		frame.getContentPane().add(lblYut);
 		
-		lblNomejogador = new JLabel("");
-		lblNomejogador.setBounds(57, 42, 90, 14);
+		lblNomejogador = new JLabel("-");
+		lblNomejogador.setBounds(60, 42, 90, 14);
 		frame.getContentPane().add(lblNomejogador);
-		
-		
  
 		botoesTabuleiro = new JButton[8][8];
-		h = new Tabuleiro();
 	    for (int i = 0; i < 8; i++) {
 	    	for (int j = 0; j < 8; j++) {
 	            	
@@ -229,38 +225,25 @@ public class InterfaceJogo implements MouseListener, ActionListener {
 			putValue(SHORT_DESCRIPTION, "iniciar partida do seu jogo");
 		}
 		public void actionPerformed(ActionEvent e) {
-			h.definirPartidaEmAndamento(true);
+			tabuleiro.definirPartidaEmAndamento();
 			atorJogador.iniciarPartida();
-			
 		}
 	}
+
 	public void receberJogada(Lance lance) {
-		// TODO Auto-generated method stub
-		h.definirPartidaEmAndamento(true);
+		tabuleiro.definirPartidaEmAndamento();
 		atualizarTabuleiro(lance.peca);
-		
 	}
 	public void notificar(String notificacao) {
 		JOptionPane.showMessageDialog(null, notificacao);
 	}
-	
-	public String obterNomeJogador() {
-		String nome = JOptionPane.showInputDialog("Qual o seu nome?");
-		return nome;
-	}
-	
-	public String obterEnderecoServidor() {
-		String idServidor = ("localhost");
-		idServidor = JOptionPane.showInputDialog(null, "Insira o endere�o do servidor", idServidor);
-		return idServidor;
-	}
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
+
 	@Override
 	public void mouseClicked(MouseEvent e) {
+		if (!tabuleiro.ehTurnoJogadorLocal()) {
+			JOptionPane.showMessageDialog(null, "Vez do jogador remoto!");
+			return;
+		}
      	if (e.getSource() == botoesMenu[0]) {
      		tipoPeca = Peca.Tipo.QUADRADO;
 		} else if (e.getSource() == botoesMenu[1]) {
@@ -281,27 +264,7 @@ public class InterfaceJogo implements MouseListener, ActionListener {
 			peca.ancora = ancora;
 			peca.tipo = tipoPeca;
 			peca.cor = tipoPeca.cor;
-			h.colocarPeca(peca);
+			atualizarTabuleiro(peca);
 		}
-	}
-	@Override
-	public void mousePressed(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
-	public void mouseReleased(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
-	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
-	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
 	}
 }

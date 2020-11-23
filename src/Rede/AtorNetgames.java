@@ -54,6 +54,7 @@ public class AtorNetgames implements OuvidorProxy {
 	}
 
 	public void iniciarPartida() {
+		System.out.println("iniciarPartida");
 		try {
 			proxy.iniciarPartida(2);
 		} catch (NaoConectadoException e) {
@@ -64,6 +65,7 @@ public class AtorNetgames implements OuvidorProxy {
 
 	@Override
 	public void iniciarNovaPartida(Integer posicao) {
+		System.out.println("iniciarNovaPartida");
 		int indiceAdversario = 1;
 		if (posicao.equals(1)) indiceAdversario = 2;
 		String adversario = proxy.obterNomeAdversario(indiceAdversario);

@@ -1,6 +1,8 @@
 package DominioDoProblema;
 
-public class Posicao {
+import java.io.Serializable;
+
+public class Posicao implements Serializable {
 	public Peca peca;
 	public int i;
 	public int j;
