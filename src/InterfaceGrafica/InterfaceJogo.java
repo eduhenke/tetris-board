@@ -73,7 +73,7 @@ public class InterfaceJogo {
 				previaTabuleiro.posicoes[i][j].peca = this.tabuleiro.posicoes[i][j].peca;
 			}
 		}
-		if (previaTabuleiro.podeColocarPeca(novaPeca.ancora, novaPeca.tipo))
+		if (previaTabuleiro.podeColocarPeca(novaPeca.ancora, novaPeca.tipo, novaPeca.rotacao))
 			previaTabuleiro.efetuarColocacaoPeca(novaPeca);
 		atualizarBotoesTabuleiro(previaTabuleiro, novaPeca);
 	}
