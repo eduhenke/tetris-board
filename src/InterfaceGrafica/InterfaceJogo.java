@@ -24,7 +24,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 
-public class InterfaceJogo extends MouseAdapter implements MouseListener {
+public class InterfaceJogo {
 
 	private JFrame frame;
 	private AtorJogador atorJogador;
@@ -33,6 +33,7 @@ public class InterfaceJogo extends MouseAdapter implements MouseListener {
 	public JLabel lblNomejogador;
 	public Tabuleiro tabuleiro;
 	Peca.Tipo tipoPeca = null;
+	Peca.Rotacao rotacaoPeca = Peca.Rotacao.DEG_0;
 	/**
 	 * Launch the application.
 	só */
@@ -48,8 +49,8 @@ public class InterfaceJogo extends MouseAdapter implements MouseListener {
 			}
 		});
 	}
-	public void atualizarTabuleiro(Peca novaPeca){
-		tabuleiro.colocarPeca(novaPeca);
+
+	private void atualizarBotoesTabuleiro(Tabuleiro tabuleiro, Peca novaPeca){
 		for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
             	Peca peca = tabuleiro.posicoes[i][j].peca;
@@ -60,6 +61,20 @@ public class InterfaceJogo extends MouseAdapter implements MouseListener {
             	}
             }
 		}
+	}
+	public void atualizarTabuleiro(Peca novaPeca) {
+		atualizarBotoesTabuleiro(this.tabuleiro, novaPeca);
+	}
+	public void atualizarPreviaTabuleiro(Peca novaPeca) {
+		Tabuleiro previaTabuleiro = new Tabuleiro(this.atorJogador);
+		for (int i = 0; i < 8; i++) {
+			for (int j = 0; j < 8; j++) {
+				previaTabuleiro.posicoes[i][j].peca = this.tabuleiro.posicoes[i][j].peca;
+			}
+		}
+		if (previaTabuleiro.podeColocarPeca(novaPeca.ancora, novaPeca.tipo))
+			previaTabuleiro.efetuarColocacaoPeca(novaPeca);
+		atualizarBotoesTabuleiro(previaTabuleiro, novaPeca);
 	}
 
 	/**
@@ -171,42 +186,43 @@ public class InterfaceJogo extends MouseAdapter implements MouseListener {
 		frame.getContentPane().add(lblNomejogador);
  
 		botoesTabuleiro = new JButton[8][8];
-	    for (int i = 0; i < 8; i++) {
+		InterfaceJogo gui = this;
+
+		for (int i = 0; i < 8; i++) {
 	    	for (int j = 0; j < 8; j++) {
 	            	
 	    		botoesTabuleiro[i][j] = new JButton();
 	    		botoesTabuleiro[i][j].setBackground(Color.WHITE);
 	    		panel.add(botoesTabuleiro[i][j]);
-	    		botoesTabuleiro[i][j].addMouseListener(this);
+	    		botoesTabuleiro[i][j].addMouseListener(new MouseAdapter() {
+					public void mouseClicked(MouseEvent e) {
+						if (e.getButton() == MouseEvent.BUTTON1)
+							gui.selecionarPosicao(e);
+						else if (e.getButton() == MouseEvent.BUTTON3)
+							gui.girarPeca();
+					}
+					public void mouseEntered(MouseEvent e) { gui.mostrarPreviaJogada(e); }
+				});
 	    	}
 	    }
 	    
 		for(int i = 0;i<=3;i++) {
-			botoesMenu[i].addMouseListener(this);
+			botoesMenu[i].addMouseListener(new MouseAdapter() {
+				public void mouseClicked(MouseEvent e) { gui.selecionarPeca(e); }
+			});
 		}
-		
-	   
 	}
 	
 	private class ConnectAction extends AbstractAction {
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
 		public ConnectAction() {
 			putValue(NAME, "conectar");
 			putValue(SHORT_DESCRIPTION, "conectar a Netgames Server");
 		}
-		public void actionPerformed(ActionEvent e) {
-			// Necessário definir endereço do servidor e nome do jogador
-			atorJogador.conectar();
-		}
+
+		// Necessário definir endereço do servidor e nome do jogador
+		public void actionPerformed(ActionEvent e) { atorJogador.conectar(); }
 	}
 	private class DisconnectAction extends AbstractAction {
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
 		public DisconnectAction() {
 			putValue(NAME, "desconectar");
 			putValue(SHORT_DESCRIPTION, "desconectar de Netgames Server");
@@ -216,10 +232,6 @@ public class InterfaceJogo extends MouseAdapter implements MouseListener {
 		}
 	}
 	private class StartMatchAction extends AbstractAction {
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
 		public StartMatchAction() {
 			putValue(NAME, "iniciar partida");
 			putValue(SHORT_DESCRIPTION, "iniciar partida do seu jogo");
@@ -234,37 +246,52 @@ public class InterfaceJogo extends MouseAdapter implements MouseListener {
 		tabuleiro.definirPartidaEmAndamento();
 		atualizarTabuleiro(lance.peca);
 	}
+
 	public void notificar(String notificacao) {
 		JOptionPane.showMessageDialog(null, notificacao);
 	}
 
-	@Override
-	public void mouseClicked(MouseEvent e) {
+	public void selecionarPeca(MouseEvent e) {
+		if (e.getSource() == botoesMenu[0]) {
+			tipoPeca = Peca.Tipo.QUADRADO;
+		} else if (e.getSource() == botoesMenu[1]) {
+			tipoPeca = Peca.Tipo.L;
+		} else if (e.getSource() == botoesMenu[2]) {
+			tipoPeca = Peca.Tipo.LINHA;
+		} else if (e.getSource() == botoesMenu[3]) {
+			tipoPeca = Peca.Tipo.T;
+		}
+	}
+
+	private Posicao pegarPosicao(MouseEvent e) {
+		Posicao ancora = null;
+		for (int i = 0; i < 8; i++) {
+			for (int j = 0; j < 8; j++) {
+				if (e.getSource() == botoesTabuleiro[i][j])
+					ancora = new Posicao(i, j);
+			}
+		}
+		return ancora;
+	}
+
+	public void selecionarPosicao(MouseEvent e) {
 		if (!tabuleiro.ehTurnoJogadorLocal()) {
-			JOptionPane.showMessageDialog(null, "Vez do jogador remoto!");
+			notificar("Vez do jogador remoto!");
 			return;
 		}
-     	if (e.getSource() == botoesMenu[0]) {
-     		tipoPeca = Peca.Tipo.QUADRADO;
-		} else if (e.getSource() == botoesMenu[1]) {
-     		tipoPeca = Peca.Tipo.L;
-		} else if (e.getSource() == botoesMenu[2]) {
-     		tipoPeca = Peca.Tipo.LINHA;
-		} else if (e.getSource() == botoesMenu[3]) {
-     		tipoPeca = Peca.Tipo.T;
-		} else {
-	     	Posicao ancora = null;
-			for (int i = 0; i < 8; i++) {
-	            for (int j = 0; j < 8; j++) {
-	            	if (e.getSource() == botoesTabuleiro[i][j])
-	            		ancora = new Posicao(i, j);
-	            }
-			}
-			Peca peca = new Peca();
-			peca.ancora = ancora;
-			peca.tipo = tipoPeca;
-			peca.cor = tipoPeca.cor;
-			atualizarTabuleiro(peca);
-		}
+		Posicao ancora = pegarPosicao(e);
+		if (ancora == null);
+		Peca peca = new Peca(ancora, tipoPeca, rotacaoPeca);
+		atualizarTabuleiro(peca);
+	}
+	public void girarPeca() {
+		rotacaoPeca = rotacaoPeca.girar();
+	}
+	public void mostrarPreviaJogada(MouseEvent e) {
+		if (tipoPeca == null) return;
+		Posicao ancora = pegarPosicao(e);
+		if (ancora == null) return;
+		Peca peca = new Peca(ancora, tipoPeca, rotacaoPeca);
+		atualizarPreviaTabuleiro(peca);
 	}
 }

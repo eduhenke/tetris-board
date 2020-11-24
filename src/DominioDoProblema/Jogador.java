@@ -15,4 +15,8 @@ public class Jogador {
 		seuTurno = false;
 		ehVencedor = false;
 	}
+
+	public void inverterTurno() {
+		this.seuTurno = !this.seuTurno;
+	}
 }

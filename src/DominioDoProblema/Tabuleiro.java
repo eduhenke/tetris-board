@@ -24,53 +24,18 @@ public class Tabuleiro {
 	}
 	
 	public boolean podeColocarPeca(Posicao posicao, Peca.Tipo tipo) {
-
+		int i = posicao.i;
+		int j = posicao.j;
 		try {
 			switch (tipo) {
 				case QUADRADO:
-					for (int i = 0; i < 8; i++) {
-						for (int j = 0; j < 8; j++) {
-							if (posicoes[i][j] == posicao) {
-								if (posicoes[i][j].peca == null && posicoes[i + 1][j].peca == null && posicoes[i][j + 1].peca == null && posicoes[i + 1][j + 1].peca == null) {
-									return true;
-								}
-								return false;
-							}
-						}
-					}
+					return (posicoes[i][j].peca == null && posicoes[i + 1][j].peca == null && posicoes[i][j + 1].peca == null && posicoes[i + 1][j + 1].peca == null);
 				case L:
-					for (int i = 0; i < 8; i++) {
-						for (int j = 0; j < 8; j++) {
-							if (posicoes[i][j] == posicao) {
-								if (posicoes[i][j].peca == null && posicoes[i + 1][j].peca == null && posicoes[i - 1][j].peca == null && posicoes[i + 1][j + 1].peca == null) {
-									return true;
-								}
-								return false;
-							}
-						}
-					}
+					return (posicoes[i][j].peca == null && posicoes[i + 1][j].peca == null && posicoes[i - 1][j].peca == null && posicoes[i + 1][j + 1].peca == null);
 				case LINHA:
-					for (int i = 0; i < 8; i++) {
-						for (int j = 0; j < 8; j++) {
-							if (posicoes[i][j] == posicao) {
-								if (posicoes[i][j].peca == null && posicoes[i + 1][j].peca == null && posicoes[i + 2][j].peca == null && posicoes[i + 3][j].peca == null) {
-									return true;
-								}
-								return false;
-							}
-						}
-					}
+					return (posicoes[i][j].peca == null && posicoes[i + 1][j].peca == null && posicoes[i + 2][j].peca == null && posicoes[i + 3][j].peca == null);
 				case T:
-					for (int i = 0; i < 8; i++) {
-						for (int j = 0; j < 8; j++) {
-							if (posicoes[i][j] == posicao) {
-								if (posicoes[i][j].peca == null && posicoes[i - 1][j].peca == null && posicoes[i][j + 1].peca == null && posicoes[i][j - 1].peca == null) {
-									return true;
-								}
-								return false;
-							}
-						}
-					}
+					return (posicoes[i][j].peca == null && posicoes[i - 1][j].peca == null && posicoes[i][j + 1].peca == null && posicoes[i][j - 1].peca == null);
 			}
 			return false;
 		} catch (IndexOutOfBoundsException e) {
@@ -78,7 +43,7 @@ public class Tabuleiro {
 		}
 	}
 	
-	public boolean temEspacoLivre() {
+	private boolean temEspacoLivre() {
 		for(int i=0;i<8;i++) {
 			for(int j=0;j<8;j++) {
 				if(
@@ -94,15 +59,21 @@ public class Tabuleiro {
 		return false;
 	}
 
-	private void inserirPeca(Peca peca) {
+	private boolean jogoFinalizou() {
+		return !temEspacoLivre();
+	}
+
+	public void efetuarColocacaoPeca(Peca peca) {
 		int i = peca.ancora.i;
 		int j = peca.ancora.j;
 		switch (peca.tipo) {
 		case QUADRADO:
-            posicoes[i][j].peca = peca;
-            posicoes[i+1][j].peca = peca;
-            posicoes[i][j+1].peca = peca;
-            posicoes[i+1][j+1].peca = peca;
+			switch (peca.rotacao) {
+				case DEG_0: posicoes[i][j].peca = peca; posicoes[i+1][j].peca = peca; posicoes[i][j+1].peca = peca; posicoes[i+1][j+1].peca = peca;
+				case DEG_90: posicoes[i][j].peca = peca; posicoes[i+1][j].peca = peca; posicoes[i][j+1].peca = peca; posicoes[i+1][j+1].peca = peca;
+				case DEG_180: posicoes[i][j].peca = peca; posicoes[i+1][j].peca = peca; posicoes[i][j+1].peca = peca; posicoes[i+1][j+1].peca = peca;
+				case DEG_270: posicoes[i][j].peca = peca; posicoes[i+1][j].peca = peca; posicoes[i][j+1].peca = peca; posicoes[i+1][j+1].peca = peca;
+			}
             break;
 		case L:
         	posicoes[i][j].peca = peca;
@@ -126,26 +97,26 @@ public class Tabuleiro {
 	}
 
 	public boolean ehTurnoJogadorLocal() {
+		if (jogadorLocal == null) return false;
 		return jogadorLocal.seuTurno;
 	}
 
 	public void trocarTurnoJogadores() {
 		System.out.println("local: " + jogadorLocal.seuTurno + ", remoto: " + jogadorRemoto.seuTurno);
-		jogadorLocal.seuTurno = !jogadorLocal.seuTurno;
-		jogadorRemoto.seuTurno = !jogadorRemoto.seuTurno;
+		jogadorLocal.inverterTurno();
+		jogadorRemoto.inverterTurno();
 	}
 
 	public void colocarPeca(Peca novaPeca) {
 		// já inserimos essa peça anteriormente, ignorar.
 		if (!podeColocarPeca(posicoes[novaPeca.ancora.i][novaPeca.ancora.j], novaPeca.tipo))  return;
 
-		this.inserirPeca(novaPeca);
+		efetuarColocacaoPeca(novaPeca);
 
-		Lance lance = new Lance();
-		lance.peca = novaPeca;
+		Lance lance = new Lance(novaPeca);
 		atorJogador.enviarJogada(lance);
 
-		if (!temEspacoLivre()) {
+		if (jogoFinalizou()) {
 			String vencedor = "";
 			if (jogadorLocal.seuTurno) vencedor = jogadorLocal.nome;
 			if (jogadorRemoto.seuTurno) vencedor = jogadorRemoto.nome;
