@@ -10,47 +10,43 @@ public class Tabuleiro {
 	protected Jogador jogadorLocal;
 	protected Jogador jogadorRemoto;
 	public boolean partidaEmAndamento = false;
-	
+
 	public Tabuleiro(AtorJogador atorJogador) {
 		super();
 		for (int i = 0; i < 8; i++) {
 			for (int j = 0; j < 8; j++) {
 				this.posicoes[i][j] = new Posicao(i, j);
-			}	
+			}
 		}
 		this.atorJogador = atorJogador;
-		
+
 		iniciar();
 	}
-	
-	public boolean podeColocarPeca(Posicao posicao, Peca.Tipo tipo) {
-		int i = posicao.i;
-		int j = posicao.j;
+
+	public boolean podeColocarPeca(Posicao posicao, Peca.Tipo tipo, Peca.Rotacao rotacao) {
 		try {
-			switch (tipo) {
-				case QUADRADO:
-					return (posicoes[i][j].peca == null && posicoes[i + 1][j].peca == null && posicoes[i][j + 1].peca == null && posicoes[i + 1][j + 1].peca == null);
-				case L:
-					return (posicoes[i][j].peca == null && posicoes[i + 1][j].peca == null && posicoes[i - 1][j].peca == null && posicoes[i + 1][j + 1].peca == null);
-				case LINHA:
-					return (posicoes[i][j].peca == null && posicoes[i + 1][j].peca == null && posicoes[i + 2][j].peca == null && posicoes[i + 3][j].peca == null);
-				case T:
-					return (posicoes[i][j].peca == null && posicoes[i - 1][j].peca == null && posicoes[i][j + 1].peca == null && posicoes[i][j - 1].peca == null);
+			int[][] posicoesRelativas = tipo.pegaPosicoesRelativas(rotacao);
+			boolean cabe = true;
+			for (int[] pos : posicoesRelativas) {
+				int i = pos[0] + posicao.i;
+				int j = pos[1] + posicao.j;
+				if (posicoes[i][j].peca != null)
+					cabe = false;
 			}
-			return false;
+			return cabe;
 		} catch (IndexOutOfBoundsException e) {
 			return false;
 		}
 	}
-	
+
 	private boolean temEspacoLivre() {
 		for(int i=0;i<8;i++) {
 			for(int j=0;j<8;j++) {
 				if(
-					podeColocarPeca(posicoes[i][j],Peca.Tipo.QUADRADO) ||
-					podeColocarPeca(posicoes[i][j],Peca.Tipo.L) ||
-					podeColocarPeca(posicoes[i][j],Peca.Tipo.LINHA) ||
-					podeColocarPeca(posicoes[i][j],Peca.Tipo.T)
+					podeColocarPeca(posicoes[i][j], Peca.Tipo.QUADRADO, Peca.Rotacao.DEG_0) || podeColocarPeca(posicoes[i][j], Peca.Tipo.QUADRADO, Peca.Rotacao.DEG_90) || podeColocarPeca(posicoes[i][j], Peca.Tipo.QUADRADO, Peca.Rotacao.DEG_180) || podeColocarPeca(posicoes[i][j], Peca.Tipo.QUADRADO, Peca.Rotacao.DEG_270) ||
+					podeColocarPeca(posicoes[i][j], Peca.Tipo.L, Peca.Rotacao.DEG_0) || podeColocarPeca(posicoes[i][j], Peca.Tipo.L, Peca.Rotacao.DEG_90) || podeColocarPeca(posicoes[i][j], Peca.Tipo.L, Peca.Rotacao.DEG_180) || podeColocarPeca(posicoes[i][j], Peca.Tipo.L, Peca.Rotacao.DEG_270) ||
+					podeColocarPeca(posicoes[i][j], Peca.Tipo.T, Peca.Rotacao.DEG_0) || podeColocarPeca(posicoes[i][j], Peca.Tipo.T, Peca.Rotacao.DEG_90) || podeColocarPeca(posicoes[i][j], Peca.Tipo.T, Peca.Rotacao.DEG_180) || podeColocarPeca(posicoes[i][j], Peca.Tipo.T, Peca.Rotacao.DEG_270) ||
+					podeColocarPeca(posicoes[i][j], Peca.Tipo.LINHA, Peca.Rotacao.DEG_0) || podeColocarPeca(posicoes[i][j], Peca.Tipo.LINHA, Peca.Rotacao.DEG_90) || podeColocarPeca(posicoes[i][j], Peca.Tipo.LINHA, Peca.Rotacao.DEG_180) || podeColocarPeca(posicoes[i][j], Peca.Tipo.LINHA, Peca.Rotacao.DEG_270)
 				) {
 					return true;
 				}
@@ -64,40 +60,17 @@ public class Tabuleiro {
 	}
 
 	public void efetuarColocacaoPeca(Peca peca) {
-		int i = peca.ancora.i;
-		int j = peca.ancora.j;
-		switch (peca.tipo) {
-		case QUADRADO:
-			switch (peca.rotacao) {
-				case DEG_0: posicoes[i][j].peca = peca; posicoes[i+1][j].peca = peca; posicoes[i][j+1].peca = peca; posicoes[i+1][j+1].peca = peca;
-				case DEG_90: posicoes[i][j].peca = peca; posicoes[i+1][j].peca = peca; posicoes[i][j+1].peca = peca; posicoes[i+1][j+1].peca = peca;
-				case DEG_180: posicoes[i][j].peca = peca; posicoes[i+1][j].peca = peca; posicoes[i][j+1].peca = peca; posicoes[i+1][j+1].peca = peca;
-				case DEG_270: posicoes[i][j].peca = peca; posicoes[i+1][j].peca = peca; posicoes[i][j+1].peca = peca; posicoes[i+1][j+1].peca = peca;
-			}
-            break;
-		case L:
-        	posicoes[i][j].peca = peca;
-        	posicoes[i+1][j].peca = peca;
-        	posicoes[i-1][j].peca = peca;
-        	posicoes[i+1][j+1].peca = peca;
-			break;
-		case LINHA:
-        	posicoes[i][j].peca = peca;
-        	posicoes[i+1][j].peca = peca;
-        	posicoes[i+2][j].peca = peca;
-        	posicoes[i+3][j].peca = peca;
-			break;
-		case T:
-        	posicoes[i][j].peca = peca;
-        	posicoes[i-1][j].peca = peca;
-        	posicoes[i][j+1].peca = peca;
-        	posicoes[i][j-1].peca = peca;
-			break;
+		int[][] posicoesRelativas = peca.tipo.pegaPosicoesRelativas(peca.rotacao);
+		for (int[] pos : posicoesRelativas) {
+			int i = pos[0] + peca.ancora.i;
+			int j = pos[1] + peca.ancora.j;
+			posicoes[i][j].peca = peca;
 		}
 	}
 
 	public boolean ehTurnoJogadorLocal() {
-		if (jogadorLocal == null) return false;
+		if (jogadorLocal == null)
+			return false;
 		return jogadorLocal.seuTurno;
 	}
 
@@ -109,7 +82,8 @@ public class Tabuleiro {
 
 	public void colocarPeca(Peca novaPeca) {
 		// já inserimos essa peça anteriormente, ignorar.
-		if (!podeColocarPeca(posicoes[novaPeca.ancora.i][novaPeca.ancora.j], novaPeca.tipo))  return;
+		if (!podeColocarPeca(posicoes[novaPeca.ancora.i][novaPeca.ancora.j], novaPeca.tipo, novaPeca.rotacao))
+			return;
 
 		efetuarColocacaoPeca(novaPeca);
 
@@ -118,10 +92,12 @@ public class Tabuleiro {
 
 		if (jogoFinalizou()) {
 			String vencedor = "";
-			if (jogadorLocal.seuTurno) vencedor = jogadorLocal.nome;
-			if (jogadorRemoto.seuTurno) vencedor = jogadorRemoto.nome;
+			if (jogadorLocal.seuTurno)
+				vencedor = jogadorLocal.nome;
+			if (jogadorRemoto.seuTurno)
+				vencedor = jogadorRemoto.nome;
 			partidaEmAndamento = false;
-			JOptionPane.showMessageDialog(null, "Fim de Jogo! Vencedor: "+vencedor);
+			JOptionPane.showMessageDialog(null, "Fim de Jogo! Vencedor: " + vencedor);
 		}
 
 		trocarTurnoJogadores();
@@ -137,7 +113,6 @@ public class Tabuleiro {
 		partidaEmAndamento = false;
 	}
 
-
 	public void iniciarNovaPartida(Integer ordem, String nomeAdversario) {
 		jogadorLocal.iniciar();
 		jogadorRemoto = new Jogador(nomeAdversario);
@@ -152,13 +127,15 @@ public class Tabuleiro {
 
 		partidaEmAndamento = true;
 	}
-	
+
 	public void definirPartidaEmAndamento() {
 		partidaEmAndamento = true;
 	}
+
 	public boolean encerrarPartida() {
 		if (partidaEmAndamento) {
 			return true;
-		} else return false;
+		} else
+			return false;
 	}
 }

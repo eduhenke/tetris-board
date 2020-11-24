@@ -63,6 +63,7 @@ public class InterfaceJogo {
 		}
 	}
 	public void atualizarTabuleiro(Peca novaPeca) {
+		this.tabuleiro.colocarPeca(novaPeca);
 		atualizarBotoesTabuleiro(this.tabuleiro, novaPeca);
 	}
 	public void atualizarPreviaTabuleiro(Peca novaPeca) {
@@ -198,8 +199,10 @@ public class InterfaceJogo {
 					public void mouseClicked(MouseEvent e) {
 						if (e.getButton() == MouseEvent.BUTTON1)
 							gui.selecionarPosicao(e);
-						else if (e.getButton() == MouseEvent.BUTTON3)
+						else if (e.getButton() == MouseEvent.BUTTON3) {
 							gui.girarPeca();
+							gui.mostrarPreviaJogada(e);
+						}
 					}
 					public void mouseEntered(MouseEvent e) { gui.mostrarPreviaJogada(e); }
 				});
